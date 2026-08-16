@@ -1,0 +1,17 @@
+.vs/
+.vscode/
+
+bin/
+obj/
+
+*.user
+*.suo
+
+.env
+.env.*
+
+TestResults/
+
+publish/
+
+appsettings.Development.json

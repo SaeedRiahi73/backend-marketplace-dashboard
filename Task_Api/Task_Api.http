@@ -1,0 +1,6 @@
+@Task_Api_HostAddress = http://localhost:5041
+
+GET {{Task_Api_HostAddress}}/Swagger/
+Accept: application/json
+
+###

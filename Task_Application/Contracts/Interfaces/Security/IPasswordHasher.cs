@@ -1,0 +1,8 @@
+﻿namespace Task_Application.Contracts.Interfaces.Security
+{
+    public interface IPasswordHasher
+    {
+        string GenerateHash(string password);
+        bool VerifyPassword(string password,string hashedPassword);
+    }
+}
