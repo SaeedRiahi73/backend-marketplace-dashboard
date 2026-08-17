@@ -17,5 +17,6 @@ namespace Task_Application.Dtos.Product
         public int Quantity { get; set; }
         public StatusEnum Status { get; set; }
         public IFormFile? ImageFile { get; set; }
+        public bool RemoveImage { get; set; }
     }
 }
