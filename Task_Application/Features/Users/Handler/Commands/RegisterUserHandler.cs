@@ -11,6 +11,7 @@ using Task_Application.Contracts.Interfaces.Users;
 using Task_Application.Features.Users.Requests.Commands;
 using Task_Domain.Common;
 using Task_Domain.Entities;
+using Task_Domain.Enums;
 
 
 
@@ -42,7 +43,11 @@ namespace Task_Application.Features.Users.Handler.Command
 
             string passwordHash = _passwordHasher.GenerateHash(request.CreateUser.Password);
 
-            User user = new User(request.CreateUser.Username, request.CreateUser.Email, passwordHash);
+            User user = new User(
+                request.CreateUser.Username,
+                request.CreateUser.Email,
+                passwordHash,
+                UserRole.Demo);
 
             await _userRepository.AddAsync(user);
 
