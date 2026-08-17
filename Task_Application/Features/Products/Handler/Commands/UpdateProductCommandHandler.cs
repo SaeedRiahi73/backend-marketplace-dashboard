@@ -46,26 +46,32 @@ namespace Task_Application.Features.Products.Handler.Commands
             // 2.  بررسی اینکه آیا فقط سازنده محصول می‌تواند آن را ویرایش کند؟
             // if (product.CreatedBy != userId.Value)
             //     return ResultInfo<uint>.Failure(["You do not have permission to update this product."]);
-
             var newImageUrl = product.Image;
-            if (request.updateProductDto.ImageFile != null && request.updateProductDto.ImageFile.Length > 0)
+
+            if (
+                request.updateProductDto.ImageFile != null &&
+                request.updateProductDto.ImageFile.Length > 0
+            )
             {
-                // الف) حذف عکس قدیمی از wwwroot (در صورت وجود)
                 if (!string.IsNullOrEmpty(product.Image))
                 {
                     _fileStorageService.DeleteFile(product.Image);
                 }
 
-                // ب) ذخیره عکس جدید و جایگزینی آدرس
-                newImageUrl = await _fileStorageService.SaveFileAsync(request.updateProductDto.ImageFile, "product", cancellationToken);
-
+                newImageUrl = await _fileStorageService.SaveFileAsync(
+                    request.updateProductDto.ImageFile,
+                    "product",
+                    cancellationToken
+                );
             }
-            else
+            else if (request.updateProductDto.RemoveImage)
             {
                 if (!string.IsNullOrEmpty(product.Image))
                 {
                     _fileStorageService.DeleteFile(product.Image);
                 }
+
+                newImageUrl = null;
             }
 
             UpdateProductDto productDto = request.updateProductDto;
