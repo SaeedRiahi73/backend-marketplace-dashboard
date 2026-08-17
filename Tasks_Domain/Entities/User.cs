@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Task_Domain.Common;
+using Task_Domain.Enums;
 
 namespace Task_Domain.Entities;
 
@@ -9,12 +10,13 @@ public class User
     public string Username { get; private set; }
     public string Email { get; private set; }
     public string PasswordHash { get; private set; }
+    public UserRole Role { get; private set; }
 
     // سازنده بدون پارامتر برای EF
     private User() { }
 
     // سازنده اصلی
-    public User(string username, string email, string passwordHash)
+    public User(string username, string email, string passwordHash, UserRole role)
     {
         if (string.IsNullOrWhiteSpace(username))
             throw new DomainException("Username cannot be empty.");
@@ -29,6 +31,7 @@ public class User
         Username = username;
         Email = email.ToLower().Trim();
         PasswordHash = passwordHash;
+        Role = role;
     }
 
     public void ChangePassword(string newPasswordHash)
