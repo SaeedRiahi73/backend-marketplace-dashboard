@@ -15,3 +15,5 @@ TestResults/
 publish/
 
 appsettings.Development.json
+
+docs
