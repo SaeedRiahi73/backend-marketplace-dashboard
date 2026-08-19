@@ -33,7 +33,8 @@ namespace Task_Infrastructure.Services.Security
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             };
 
             DateTime expireAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpireMinutes);

@@ -19,13 +19,11 @@ namespace Task_Infrastructure.Services.Security
         {
             try
             {
-            return BCrypt.Net.BCrypt.Verify(password,hashedPassword);
-
+                return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
             }
-            catch (Exception ex)
+            catch
             {
-
-                throw;
+                return false;
             }
         }
     }

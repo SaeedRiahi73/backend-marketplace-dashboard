@@ -14,7 +14,7 @@ namespace Task_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin,Demo")]
     public class ProductsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -51,6 +51,7 @@ namespace Task_Api.Controllers
         }
 
         // POST api/<ProductsController>
+        [Authorize(Roles = "Admin")]
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct([FromForm] CreateProductDto createProductDto)
         {
@@ -66,6 +67,7 @@ namespace Task_Api.Controllers
         }
 
         // PUT api/<ProductsController>/5
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateProduct")]
         public async Task<IActionResult> Put([FromForm] UpdateProductDto updateProductDto)
         {
@@ -79,6 +81,7 @@ namespace Task_Api.Controllers
         }
 
         // DELETE api/<ProductsController>/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteProduct/{id}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {

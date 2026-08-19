@@ -9,6 +9,7 @@ using Task_Application;
 using Task_Infrastructure;
 using Task_Infrastructure.Settings;
 using Task_Persistence;
+using Task_Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +92,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+await using (AsyncServiceScope scope = app.Services.CreateAsyncScope())
+{
+    DatabaseSeeder seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedAsync();
+}
 
 // Configure the HTTP request pipeline.
 

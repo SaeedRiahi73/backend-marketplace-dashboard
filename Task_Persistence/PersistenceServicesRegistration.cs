@@ -6,6 +6,8 @@ using Task_Application.Contracts.Interfaces.Products;
 using Task_Application.Contracts.Interfaces.Users;
 using Task_Persistence.Context;
 using Task_Persistence.Repository;
+using Task_Persistence.Seed;
+using Task_Persistence.Settings;
 
 namespace Task_Persistence
 {
@@ -19,9 +21,13 @@ namespace Task_Persistence
                 options.UseSqlServer(configuration.GetConnectionString("TaskConnectionString"));
             });
 
+            services.Configure<InitialUsersSettings>(
+                configuration.GetSection(InitialUsersSettings.SectionName));
+
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<DatabaseSeeder>();
 
             return services;
         }
