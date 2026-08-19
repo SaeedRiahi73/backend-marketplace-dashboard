@@ -53,6 +53,8 @@ namespace Task_Infrastructure.Services.Security
             LoginResponseDto loginResponse = new LoginResponseDto()
             {
                 UserName = user.Username,
+                RoleId = (int)user.Role,
+                Role = user.Role.ToString(),
                 ExpireAt = expireAt,
                 Token = tokenHandler.WriteToken(token)
             };
