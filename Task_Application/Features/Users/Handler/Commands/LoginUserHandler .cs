@@ -4,6 +4,7 @@ using Task_Application.Contracts.Interfaces.Security;
 using Task_Application.Contracts.Interfaces.Users;
 using Task_Application.Dtos.Security;
 using Task_Application.Dtos.User;
+using Task_Application.Enums;
 using Task_Application.Features.Users.Requests.Commands;
 using Task_Domain.Entities;
 
@@ -30,10 +31,14 @@ namespace Task_Application.Features.Users.Handler.Command
             User? user = await _userRepository.GetUserByUsernameOrEmailAsync(request.UserLoginDto.UsernameOrEmail);
 
             if (user == null)
-                return ResultInfo<LoginResponseDto>.Failure(["Invalid username or email."]);
+                return ResultInfo<LoginResponseDto>.Failure(
+                    ["Invalid username or email."],
+                    status: ResultStatus.Unauthorized);
 
             if (!_passwordHasher.VerifyPassword(request.UserLoginDto.Password, user.PasswordHash))
-                return ResultInfo<LoginResponseDto>.Failure(["Invalid password"]);
+                return ResultInfo<LoginResponseDto>.Failure(
+                    ["Invalid password"],
+                    status: ResultStatus.Unauthorized);
 
             LoginResponseDto loginResponse = _jwtService.GenerateToken(user);
 

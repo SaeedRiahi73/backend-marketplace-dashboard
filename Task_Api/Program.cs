@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Threading.RateLimiting;
 using Task_Api.Middlewares;
 using Task_Application;
+using Task_Application.Common.Responses;
+using Task_Application.Enums;
 using Task_Infrastructure;
 using Task_Infrastructure.Settings;
 using Task_Persistence;
@@ -27,6 +31,35 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        ResultInfo<object?> response = ResultInfo<object?>.Failure(
+            ["Too many requests. Please try again later."],
+            status: ResultStatus.TooManyRequests);
+
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            response,
+            cancellationToken);
+    };
+
+    options.AddPolicy("demo-login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey:
+                httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+});
 
 builder.Services.ConfigureApplicationServices();
 builder.Services.ConfigureInfrastructureServices(builder.Configuration);
@@ -113,7 +146,11 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
+app.UseRouting();
+
 app.UseCors("AllowReactApp");
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 

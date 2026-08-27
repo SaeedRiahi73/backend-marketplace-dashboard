@@ -26,9 +26,13 @@ namespace Task_Persistence.Repository
             return await _context.Set<User>().AnyAsync(x => x.Username == username);
         }
 
-        public async Task<User?> GetUserByUsernameAsync(string username)
+        public async Task<User?> GetUserByUsernameAsync(
+            string username,
+            CancellationToken cancellationToken = default)
         {
-            return await _context.Set<User>().FirstOrDefaultAsync(e => e.Username == username);
+            return await _context.Set<User>().FirstOrDefaultAsync(
+                user => user.Username == username,
+                cancellationToken);
         }
 
         public async Task<User?> GetUserByUsernameOrEmailAsync(string usernameOrEmail)

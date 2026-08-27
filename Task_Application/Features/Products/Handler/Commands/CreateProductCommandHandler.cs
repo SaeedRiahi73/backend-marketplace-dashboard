@@ -10,6 +10,7 @@ using Task_Application.Contracts.Interfaces.Services;
 using Task_Application.Contracts.Interfaces.Users;
 using Task_Application.Dtos.Product;
 using Task_Application.Dtos.Security;
+using Task_Application.Enums;
 using Task_Application.Features.Products.Requests.Commands;
 using Task_Domain.Entities;
 
@@ -32,7 +33,9 @@ namespace Task_Application.Features.Products.Handler.Commands
             Guid? userId = _currentUserService.UserId;
 
             if (userId is null || userId == Guid.Empty)
-                return ResultInfo<Guid>.Failure(["The user is not authenticated."]);
+                return ResultInfo<Guid>.Failure(
+                    ["The user is not authenticated."],
+                    status: ResultStatus.Unauthorized);
 
             // ذخیره فایل در پوشه wwwroot/product
             string imageUrl = string.Empty;
@@ -54,7 +57,10 @@ namespace Task_Application.Features.Products.Handler.Commands
 
             await _productRepository.AddAsync(product);
 
-            return ResultInfo<Guid>.Success(product.Id, "product created successfully");
+            return ResultInfo<Guid>.Success(
+                product.Id,
+                "product created successfully",
+                ResultStatus.Created);
         }
     }
 }

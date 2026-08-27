@@ -27,9 +27,6 @@ namespace Task_Application.Features.Products.Handler.Queries
         {
             IEnumerable<Product> products = await _productRepository.GetAllAsync();
 
-            if (products == null || !products.Any())
-                return ResultInfo<IEnumerable<ProductDto>>.Failure(["No products found."]);
-
             IEnumerable<ProductDto> productsDto = _mapper.Map<IEnumerable<ProductDto>>(products);
 
             return ResultInfo<IEnumerable<ProductDto>>.Success(productsDto, "successed");

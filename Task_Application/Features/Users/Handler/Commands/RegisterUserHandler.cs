@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Task_Application.Common.Responses;
 using Task_Application.Contracts.Interfaces.Security;
 using Task_Application.Contracts.Interfaces.Users;
+using Task_Application.Enums;
 using Task_Application.Features.Users.Requests.Commands;
 using Task_Domain.Common;
 using Task_Domain.Entities;
@@ -33,13 +34,19 @@ namespace Task_Application.Features.Users.Handler.Command
         {
 
             if (string.IsNullOrEmpty(request.CreateUser.Username))
-                return ResultInfo<Guid>.Failure(["Username is empty"]);
+                return ResultInfo<Guid>.Failure(
+                    ["Username is empty"],
+                    status: ResultStatus.ValidationError);
 
             if (string.IsNullOrEmpty(request.CreateUser.Password))
-                return ResultInfo<Guid>.Failure(["Password is empty"]);
+                return ResultInfo<Guid>.Failure(
+                    ["Password is empty"],
+                    status: ResultStatus.ValidationError);
 
             if (await _userRepository.ExistsByUsernameAsync(request.CreateUser.Username))
-                return ResultInfo<Guid>.Failure(["Username already exists"]);
+                return ResultInfo<Guid>.Failure(
+                    ["Username already exists"],
+                    status: ResultStatus.Conflict);
 
             string passwordHash = _passwordHasher.GenerateHash(request.CreateUser.Password);
 
@@ -51,7 +58,10 @@ namespace Task_Application.Features.Users.Handler.Command
 
             await _userRepository.AddAsync(user);
 
-            return ResultInfo<Guid>.Success(user.Id, "User created successfully");
+            return ResultInfo<Guid>.Success(
+                user.Id,
+                "User created successfully",
+                ResultStatus.Created);
         }
     }
 }

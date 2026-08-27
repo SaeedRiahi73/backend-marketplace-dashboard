@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Task_Application.Common.Responses;
 using Task_Application.Contracts.Interfaces.Products;
 using Task_Application.Dtos.Product;
+using Task_Application.Enums;
 using Task_Application.Features.Products.Requests.Queries;
 using Task_Domain.Entities;
 
@@ -28,7 +29,9 @@ namespace Task_Application.Features.Products.Handler.Queries
             Product product = await _productRepository.GetByIdAsync(request.productId);
 
             if (product == null)
-                return ResultInfo<ProductDto>.Failure(["product is Empty"]);
+                return ResultInfo<ProductDto>.Failure(
+                    ["Product not found."],
+                    status: ResultStatus.NotFound);
 
             ProductDto productDto = _mapper.Map<ProductDto>(product);
 

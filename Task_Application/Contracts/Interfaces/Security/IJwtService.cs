@@ -6,6 +6,6 @@ namespace Task_Application.Contracts.Interfaces.Security
 {
     public interface IJwtService
     {
-        LoginResponseDto GenerateToken(User user);
+        LoginResponseDto GenerateToken(User user, TimeSpan? lifetime = null);
     }
 }
