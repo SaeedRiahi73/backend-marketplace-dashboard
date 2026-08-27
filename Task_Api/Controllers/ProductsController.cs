@@ -31,10 +31,7 @@ namespace Task_Api.Controllers
             GetAllProductsQueryRequest Request = new GetAllProductsQueryRequest();
             ResultInfo<IEnumerable<ProductDto>> response = await _mediator.Send(Request);
 
-            if (!response.IsSuccess)
-                return BadRequest(response);
-
-            return Ok(response);
+            return StatusCode((int)response.Status, response);
         }
 
         // GET api/<ProductsController>/5
@@ -44,14 +41,11 @@ namespace Task_Api.Controllers
             GetProductQueryRequest Request = new GetProductQueryRequest { productId = productId };
             ResultInfo<ProductDto> response = await _mediator.Send(Request);
 
-            if (!response.IsSuccess)
-                return BadRequest(response);
-
-            return Ok(response);
+            return StatusCode((int)response.Status, response);
         }
 
         // POST api/<ProductsController>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ProductManager")]
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct([FromForm] CreateProductDto createProductDto)
         {
@@ -59,25 +53,19 @@ namespace Task_Api.Controllers
             CreateProductCommandRequest Request = new CreateProductCommandRequest { CreateProduct = createProductDto };
             ResultInfo<Guid> response = await _mediator.Send(Request);
 
-            if (!response.IsSuccess)
-                return BadRequest(response);
-
-            return Ok(response);
+            return StatusCode((int)response.Status, response);
 
         }
 
         // PUT api/<ProductsController>/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ProductManager")]
         [HttpPut("UpdateProduct")]
         public async Task<IActionResult> Put([FromForm] UpdateProductDto updateProductDto)
         {
             UpdateProductCommandRequest Request = new UpdateProductCommandRequest { updateProductDto = updateProductDto };
             ResultInfo<Unit> response = await _mediator.Send(Request);
 
-            if (!response.IsSuccess)
-                return BadRequest(response.Errors);
-
-            return Ok(response);
+            return StatusCode((int)response.Status, response);
         }
 
         // DELETE api/<ProductsController>/5
@@ -88,10 +76,7 @@ namespace Task_Api.Controllers
             DeleteProductCommandRequest Request = new DeleteProductCommandRequest { productId = id };
             ResultInfo<Unit> response = await _mediator.Send(Request);
 
-            if (!response.IsSuccess)
-                return BadRequest(response);
-
-            return Ok(response);
+            return StatusCode((int)response.Status, response);
         }
     }
 }

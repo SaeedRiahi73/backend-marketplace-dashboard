@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Task_Application.Common.Responses;
@@ -28,11 +29,22 @@ namespace Task_Api.Controllers
             LoginUserRequest  request = new LoginUserRequest { UserLoginDto = user };
             ResultInfo<LoginResponseDto> response = await _mediator.Send(request);
 
-            if (!response.IsSuccess)
-                return BadRequest(response);
+            return StatusCode((int)response.Status, response);
 
-            return Ok(response);
+        }
 
+        [AllowAnonymous]
+        [EnableRateLimiting("demo-login")]
+        [HttpPost("DemoLogin")]
+        public async Task<IActionResult> DemoLogin(
+            CancellationToken cancellationToken)
+        {
+            DemoLoginCommandRequest request = new DemoLoginCommandRequest();
+            ResultInfo<LoginResponseDto> response = await _mediator.Send(
+                request,
+                cancellationToken);
+
+            return StatusCode((int)response.Status, response);
         }
 
         [HttpPost("register")]
@@ -41,10 +53,7 @@ namespace Task_Api.Controllers
             RegisterUserRequest request = new RegisterUserRequest { CreateUser = createUser };
             ResultInfo<Guid> response = await _mediator.Send(request);
 
-            if (!response.IsSuccess)
-                return BadRequest(response);
-
-            return Ok(response);
+            return StatusCode((int)response.Status, response);
 
         }
 

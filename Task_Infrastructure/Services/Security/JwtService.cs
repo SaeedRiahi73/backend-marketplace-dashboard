@@ -24,7 +24,7 @@ namespace Task_Infrastructure.Services.Security
             _jwtSettings = options.Value;
         }
 
-        public LoginResponseDto GenerateToken(User user)
+        public LoginResponseDto GenerateToken(User user, TimeSpan? lifetime = null)
         {
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
 
@@ -37,7 +37,10 @@ namespace Task_Infrastructure.Services.Security
                 new Claim(ClaimTypes.Role, user.Role.ToString())
             };
 
-            DateTime expireAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpireMinutes);
+            TimeSpan tokenLifetime =
+                lifetime ?? TimeSpan.FromMinutes(_jwtSettings.ExpireMinutes);
+
+            DateTime expireAt = DateTime.UtcNow.Add(tokenLifetime);
 
             SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
             {

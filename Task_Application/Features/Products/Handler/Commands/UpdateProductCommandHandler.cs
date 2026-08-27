@@ -10,6 +10,7 @@ using Task_Application.Contracts.Interfaces.Products;
 using Task_Application.Contracts.Interfaces.Services;
 using Task_Application.Contracts.Interfaces.Users;
 using Task_Application.Dtos.Product;
+using Task_Application.Enums;
 using Task_Application.Features.Products.Requests.Commands;
 using Task_Domain.Entities;
 
@@ -35,13 +36,17 @@ namespace Task_Application.Features.Products.Handler.Commands
             Guid? userId = _currentUserService.UserId;
 
             if (userId is null || userId == Guid.Empty)
-                return ResultInfo<Unit>.Failure(["The user is not authenticated."]);
+                return ResultInfo<Unit>.Failure(
+                    ["The user is not authenticated."],
+                    status: ResultStatus.Unauthorized);
 
             // 1. پیدا کردن محصول موجود در دیتابیس
             var product = await _productRepository.GetByIdAsync(request.updateProductDto.Id);
 
             if (product == null)
-                return ResultInfo<Unit>.Failure(["Product not found."]);
+                return ResultInfo<Unit>.Failure(
+                    ["Product not found."],
+                    status: ResultStatus.NotFound);
 
             // 2.  بررسی اینکه آیا فقط سازنده محصول می‌تواند آن را ویرایش کند؟
             // if (product.CreatedBy != userId.Value)
