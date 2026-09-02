@@ -26,7 +26,9 @@ namespace Task_Application.Features.Products.Handler.Queries
         }
         public async Task<ResultInfo<ProductDto>> Handle(GetProductQueryRequest request, CancellationToken cancellationToken)
         {
-            Product product = await _productRepository.GetByIdAsync(request.productId);
+            Product? product = await _productRepository.GetByIdAsync(
+                request.productId,
+                cancellationToken);
 
             if (product == null)
                 return ResultInfo<ProductDto>.Failure(

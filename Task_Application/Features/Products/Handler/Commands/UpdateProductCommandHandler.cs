@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Task_Application.Common.Responses;
+using Task_Application.Contracts.Interfaces;
 using Task_Application.Contracts.Interfaces.Products;
 using Task_Application.Contracts.Interfaces.Services;
 using Task_Application.Contracts.Interfaces.Users;
@@ -21,14 +22,18 @@ namespace Task_Application.Features.Products.Handler.Commands
         private readonly IProductRepository _productRepository;
         private readonly ICurrentUserService _currentUserService;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UpdateProductCommandHandler(IProductRepository productRepository,
+        public UpdateProductCommandHandler(
+            IProductRepository productRepository,
             ICurrentUserService currentUserService,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            IUnitOfWork unitOfWork)
         {
             _productRepository = productRepository;
             _currentUserService = currentUserService;
             _fileStorageService = fileStorageService;
+            _unitOfWork = unitOfWork;
         }
         public async Task<ResultInfo<Unit>> Handle(UpdateProductCommandRequest request, CancellationToken cancellationToken)
         {
@@ -41,7 +46,9 @@ namespace Task_Application.Features.Products.Handler.Commands
                     status: ResultStatus.Unauthorized);
 
             // 1. پیدا کردن محصول موجود در دیتابیس
-            var product = await _productRepository.GetByIdAsync(request.updateProductDto.Id);
+            var product = await _productRepository.GetByIdAsync(
+                request.updateProductDto.Id,
+                cancellationToken);
 
             if (product == null)
                 return ResultInfo<Unit>.Failure(
@@ -90,7 +97,7 @@ namespace Task_Application.Features.Products.Handler.Commands
                 newImageUrl
                 );
 
-            await _productRepository.UpdateAsync(product);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResultInfo<Unit>.Success(Unit.Value, "Product updated successfully.");
 

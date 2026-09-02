@@ -71,7 +71,12 @@ public sealed class DatabaseSeeder
 
             string passwordHash = _passwordHasher.GenerateHash(settings.Password);
             await _dbContext.Users.AddAsync(
-                new User(username, email, passwordHash, expectedRole),
+                new User(
+                    username,
+                    email,
+                    passwordHash,
+                    expectedRole,
+                    isSystemUser: true),
                 cancellationToken);
 
             return;
@@ -88,6 +93,8 @@ public sealed class DatabaseSeeder
             throw new InvalidOperationException(
                 $"The user configured for InitialUsers:{settingsName} has an unexpected email address.");
         }
+
+        user.MarkAsSystemUser();
 
         if (!_passwordHasher.VerifyPassword(settings.Password, user.PasswordHash))
         {

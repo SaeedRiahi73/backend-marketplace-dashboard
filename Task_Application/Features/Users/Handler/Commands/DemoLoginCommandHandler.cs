@@ -47,6 +47,13 @@ namespace Task_Application.Features.Users.Handler.Command
                     status: ResultStatus.Forbidden);
             }
 
+            if (!demoUser.IsActive)
+            {
+                return ResultInfo<LoginResponseDto>.Failure(
+                    ["Demo user is not available."],
+                    status: ResultStatus.Forbidden);
+            }
+
             LoginResponseDto response = _jwtService.GenerateToken(
                 demoUser,
                 TimeSpan.FromMinutes(30));

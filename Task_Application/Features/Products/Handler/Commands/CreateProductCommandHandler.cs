@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Task_Application.Common.Responses;
+using Task_Application.Contracts.Interfaces;
 using Task_Application.Contracts.Interfaces.Products;
 using Task_Application.Contracts.Interfaces.Services;
 using Task_Application.Contracts.Interfaces.Users;
@@ -21,12 +22,18 @@ namespace Task_Application.Features.Products.Handler.Commands
         private readonly ICurrentUserService _currentUserService;
         private readonly IProductRepository _productRepository;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CreateProductCommandHandler(ICurrentUserService currentUserService, IProductRepository productRepository, IFileStorageService fileStorageService)
+        public CreateProductCommandHandler(
+            ICurrentUserService currentUserService,
+            IProductRepository productRepository,
+            IFileStorageService fileStorageService,
+            IUnitOfWork unitOfWork)
         {
             _currentUserService = currentUserService;
             _productRepository = productRepository;
             _fileStorageService = fileStorageService;
+            _unitOfWork = unitOfWork;
         }
         public async Task<ResultInfo<Guid>> Handle(CreateProductCommandRequest request, CancellationToken cancellationToken)
         {
@@ -55,7 +62,11 @@ namespace Task_Application.Features.Products.Handler.Commands
                 imageUrl
              );
 
-            await _productRepository.AddAsync(product);
+            await _productRepository.AddAsync(
+                product,
+                cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResultInfo<Guid>.Success(
                 product.Id,
