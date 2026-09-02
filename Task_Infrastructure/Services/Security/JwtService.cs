@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Task_Application.Common.Constants;
 using Task_Application.Contracts.Interfaces.Security;
 using Task_Application.Dtos.Security;
 using Task_Domain.Entities;
@@ -34,7 +35,8 @@ namespace Task_Infrastructure.Services.Security
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
+                new Claim(JwtClaimNames.TokenVersion,user.TokenVersion.ToString())
             };
 
             TimeSpan tokenLifetime =

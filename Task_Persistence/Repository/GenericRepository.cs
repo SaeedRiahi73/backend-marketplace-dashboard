@@ -17,33 +17,35 @@ namespace Task_Persistence.Repository
         {
             _context = context;
         }
-        public async Task<T> AddAsync(T entity)
+        public async Task AddAsync(
+            T entity,
+            CancellationToken cancellationToken = default)
         {
-            await _context.Set<T>().AddAsync(entity);
-            await _context.SaveChangesAsync();
-            return entity;
+            await _context.Set<T>().AddAsync(
+                entity,
+                cancellationToken);
         }
 
-        public async Task DeleteAsync(T item)
+        public void Delete(T entity)
         {
-            _context.Set<T>().Remove(item);
-            await _context.SaveChangesAsync();
+            _context.Set<T>().Remove(entity);
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IReadOnlyList<T>> GetAllAsync(
+            CancellationToken cancellationToken = default)
         {
-            return await _context.Set<T>().ToListAsync();
+            return await _context.Set<T>()
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<T?> GetByIdAsync(Guid id)
+        public async Task<T?> GetByIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
-            return await _context.Set<T>().FindAsync(id);
-        }
-
-        public async Task UpdateAsync(T item)
-        {
-            _context.Set<T>().Update(item);
-            await _context.SaveChangesAsync();
+            return await _context.Set<T>().FindAsync(
+                [id],
+                cancellationToken);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Task_Application.Contracts.Interfaces.Users;
+using Task_Domain.Enums;
 
 namespace Task_Infrastructure.Services
 {
@@ -26,6 +27,27 @@ namespace Task_Infrastructure.Services
                 if (Guid.TryParse(userIdClaim, out var parsedGuid))
                 {
                     return parsedGuid;
+                }
+
+                return null;
+            }
+        }
+
+        public UserRole? Role
+        {
+            get
+            {
+                string? roleClaim = _httpContextAccessor.HttpContext?
+                    .User?
+                    .FindFirst(ClaimTypes.Role)?
+                    .Value;
+
+                if (Enum.TryParse(
+                        roleClaim,
+                        ignoreCase: true,
+                        out UserRole role))
+                {
+                    return role;
                 }
 
                 return null;

@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using Task_Api.Middlewares;
 using Task_Application;
+using Task_Application.Common.Constants;
 using Task_Application.Common.Responses;
+using Task_Application.Contracts.Interfaces.Security;
 using Task_Application.Enums;
 using Task_Infrastructure;
 using Task_Infrastructure.Settings;
@@ -86,6 +89,39 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings!.Issuer,
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            string? userIdClaim = context.Principal?
+                .FindFirst(ClaimTypes.NameIdentifier)?
+                .Value;
+
+            string? tokenVersionClaim = context.Principal?
+                .FindFirst(JwtClaimNames.TokenVersion)?
+                .Value;
+
+            if (!Guid.TryParse(userIdClaim, out Guid userId) ||
+                !int.TryParse(tokenVersionClaim, out int tokenVersion))
+            {
+                context.Fail("Invalid token claims.");
+                return;
+            }
+
+            IUserTokenValidator tokenValidator = context.HttpContext
+                .RequestServices
+                .GetRequiredService<IUserTokenValidator>();
+
+            bool isValid = await tokenValidator.IsValidAsync(
+                userId,
+                tokenVersion,
+                context.HttpContext.RequestAborted);
+
+            if (!isValid)
+                context.Fail("The token is no longer valid.");
+        }
     };
 });
 

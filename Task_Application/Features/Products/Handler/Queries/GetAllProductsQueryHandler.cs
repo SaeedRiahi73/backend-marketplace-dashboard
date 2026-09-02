@@ -25,7 +25,8 @@ namespace Task_Application.Features.Products.Handler.Queries
         }
         public async Task<ResultInfo<IEnumerable<ProductDto>>> Handle(GetAllProductsQueryRequest request, CancellationToken cancellationToken)
         {
-            IEnumerable<Product> products = await _productRepository.GetAllAsync();
+            IReadOnlyList<Product> products =
+                await _productRepository.GetAllAsync(cancellationToken);
 
             IEnumerable<ProductDto> productsDto = _mapper.Map<IEnumerable<ProductDto>>(products);
 
