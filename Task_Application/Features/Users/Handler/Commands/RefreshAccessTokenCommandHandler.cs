@@ -108,6 +108,9 @@ public sealed class RefreshAccessTokenCommandHandler
         RefreshAccessTokenResponseDto response = new()
         {
             Token = accessToken.Token,
+            UserName = accessToken.UserName,
+            RoleId = accessToken.RoleId,
+            Role = accessToken.Role,
             ExpireAt = accessToken.ExpireAt,
             RefreshTokenCookie = new RefreshTokenCookieDto
             {

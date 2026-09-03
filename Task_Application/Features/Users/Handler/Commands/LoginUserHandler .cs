@@ -51,19 +51,13 @@ namespace Task_Application.Features.Users.Handler.Command
             User? user = await _userRepository.GetUserByUsernameOrEmailAsync(request.UserLoginDto.UsernameOrEmail);
 
             if (user == null)
-                return ResultInfo<LoginResponseDto>.Failure(
-                    ["Invalid username or email."],
-                    status: ResultStatus.Unauthorized);
+                return ResultInfo<LoginResponseDto>.Failure(["Invalid username or email."],status: ResultStatus.Unauthorized);
 
             if (!_passwordHasher.VerifyPassword(request.UserLoginDto.Password, user.PasswordHash))
-                return ResultInfo<LoginResponseDto>.Failure(
-                    ["Invalid password"],
-                    status: ResultStatus.Unauthorized);
+                return ResultInfo<LoginResponseDto>.Failure(["Invalid password"],status: ResultStatus.Unauthorized);
 
             if (!user.IsActive)
-                return ResultInfo<LoginResponseDto>.Failure(
-                    ["User account is inactive."],
-                    status: ResultStatus.Forbidden);
+                return ResultInfo<LoginResponseDto>.Failure(["User account is inactive."],status: ResultStatus.Forbidden);
 
             bool isPersistent = request.UserLoginDto.RememberMe;
             int expirationDays = isPersistent
@@ -71,10 +65,8 @@ namespace Task_Application.Features.Users.Handler.Command
                 : _refreshTokenSettings.SessionExpirationDays;
 
             string rawRefreshToken = _refreshTokenService.GenerateToken();
-            string refreshTokenHash = _refreshTokenService.HashToken(
-                rawRefreshToken);
-            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(
-                expirationDays);
+            string refreshTokenHash = _refreshTokenService.HashToken(rawRefreshToken);
+            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(expirationDays);
 
             RefreshToken refreshToken = new RefreshToken(
                 user.Id,
@@ -82,9 +74,7 @@ namespace Task_Application.Features.Users.Handler.Command
                 refreshTokenExpiresAt,
                 isPersistent);
 
-            await _refreshTokenRepository.AddAsync(
-                refreshToken,
-                cancellationToken);
+            await _refreshTokenRepository.AddAsync(refreshToken,cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
