@@ -5,15 +5,12 @@ using Task_Application.Contracts.Interfaces.Users;
 using Task_Application.Dtos.User;
 using Task_Application.Enums;
 using Task_Application.Features.Users.Requests.Queries;
-using Task_Domain.Entities;
+using Task_Application.Models.User;
 using Task_Domain.Enums;
 
 namespace Task_Application.Features.Users.Handler.Queries;
 
-public sealed class GetUserByIdQueryHandler
-    : IRequestHandler<
-        GetUserByIdQueryRequest,
-        ResultInfo<GetUserByIdDto>>
+public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQueryRequest, ResultInfo<GetUserByIdDto>>
 {
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -29,30 +26,21 @@ public sealed class GetUserByIdQueryHandler
         _mapper = mapper;
     }
 
-    public async Task<ResultInfo<GetUserByIdDto>> Handle(
-        GetUserByIdQueryRequest request,
-        CancellationToken cancellationToken)
+    public async Task<ResultInfo<GetUserByIdDto>> Handle(GetUserByIdQueryRequest request, CancellationToken cancellationToken)
     {
         Guid? currentUserId = _currentUserService.UserId;
         UserRole? currentUserRole = _currentUserService.Role;
 
         if (currentUserId is null || currentUserRole is null)
-        {
-            return ResultInfo<GetUserByIdDto>.Failure(
-                ["The user is not authenticated."],
-                status: ResultStatus.Unauthorized);
-        }
+            return ResultInfo<GetUserByIdDto>.Failure(["The user is not authenticated."], status: ResultStatus.Unauthorized);
 
-        User? user = await _userRepository.GetByIdAsync(
-            request.UserId,
-            cancellationToken);
+        if (currentUserRole != UserRole.Admin)
+            return ResultInfo<GetUserByIdDto>.Failure(["Only administrators can view other user details."], status: ResultStatus.Forbidden);
+
+        UserDetailsReadModel? user = await _userRepository.GetUserDetailsByIdAsync(request.UserId, cancellationToken);
 
         if (user is null)
-        {
-            return ResultInfo<GetUserByIdDto>.Failure(
-                ["User not found."],
-                status: ResultStatus.NotFound);
-        }
+            return ResultInfo<GetUserByIdDto>.Failure(["User not found."], status: ResultStatus.NotFound);
 
         GetUserByIdDto response = _mapper.Map<GetUserByIdDto>(user);
 
@@ -62,8 +50,6 @@ public sealed class GetUserByIdQueryHandler
             !user.IsSystemUser &&
             user.Id != currentUserId.Value;
 
-        return ResultInfo<GetUserByIdDto>.Success(
-            response,
-            "User retrieved successfully.");
+        return ResultInfo<GetUserByIdDto>.Success(response, "User retrieved successfully.");
     }
 }

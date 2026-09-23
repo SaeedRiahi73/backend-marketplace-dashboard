@@ -10,6 +10,7 @@ using Task_Application.Dtos.Security;
 using Task_Application.Dtos.User;
 using Task_Application.Enums;
 using Task_Application.Features.Users.Requests.Commands;
+using Task_Api.Common.Cookies;
 
 namespace Task_Api.Controllers
 {
@@ -17,7 +18,6 @@ namespace Task_Api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private const string RefreshTokenCookieName = "refresh_token";
         private readonly IMediator _mediator;
 
         public AuthController(IMediator mediator)
@@ -42,7 +42,9 @@ namespace Task_Api.Controllers
                 !string.IsNullOrWhiteSpace(
                     response.Data.RefreshTokenCookie.Token))
             {
-                SetRefreshTokenCookie(response.Data.RefreshTokenCookie);
+                RefreshTokenCookieHelper.Set(
+                    Response,
+                    response.Data.RefreshTokenCookie);
             }
 
             return StatusCode((int)response.Status, response);
@@ -55,7 +57,7 @@ namespace Task_Api.Controllers
             CancellationToken cancellationToken)
         {
             if (!Request.Cookies.TryGetValue(
-                    RefreshTokenCookieName,
+                    RefreshTokenCookieHelper.CookieName,
                     out string? refreshToken) ||
                 string.IsNullOrWhiteSpace(refreshToken))
             {
@@ -76,11 +78,13 @@ namespace Task_Api.Controllers
             if (response.IsSuccess &&
                 response.Data?.RefreshTokenCookie is not null)
             {
-                SetRefreshTokenCookie(response.Data.RefreshTokenCookie);
+                RefreshTokenCookieHelper.Set(
+                    Response,
+                    response.Data.RefreshTokenCookie);
             }
             else
             {
-                DeleteRefreshTokenCookie();
+                RefreshTokenCookieHelper.Delete(Response);
             }
 
             return StatusCode((int)response.Status, response);
@@ -94,7 +98,7 @@ namespace Task_Api.Controllers
             ResultInfo<bool> response;
 
             if (Request.Cookies.TryGetValue(
-                    RefreshTokenCookieName,
+                    RefreshTokenCookieHelper.CookieName,
                     out string? refreshToken) &&
                 !string.IsNullOrWhiteSpace(refreshToken))
             {
@@ -108,7 +112,7 @@ namespace Task_Api.Controllers
                     "User logged out successfully.");
             }
 
-            DeleteRefreshTokenCookie();
+            RefreshTokenCookieHelper.Delete(Response);
 
             return StatusCode((int)response.Status, response);
         }
@@ -138,40 +142,5 @@ namespace Task_Api.Controllers
             });
         }
 
-        private void SetRefreshTokenCookie(
-            RefreshTokenCookieDto refreshTokenCookie)
-        {
-            CookieOptions cookieOptions = CreateRefreshTokenCookieOptions();
-
-            if (refreshTokenCookie.IsPersistent)
-            {
-                cookieOptions.Expires = new DateTimeOffset(
-                    refreshTokenCookie.ExpiresAt);
-            }
-
-            Response.Cookies.Append(
-                RefreshTokenCookieName,
-                refreshTokenCookie.Token,
-                cookieOptions);
-        }
-
-        private void DeleteRefreshTokenCookie()
-        {
-            Response.Cookies.Delete(
-                RefreshTokenCookieName,
-                CreateRefreshTokenCookieOptions());
-        }
-
-        private static CookieOptions CreateRefreshTokenCookieOptions()
-        {
-            return new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                IsEssential = true,
-                Path = "/api/Auth"
-            };
-        }
     }
 }

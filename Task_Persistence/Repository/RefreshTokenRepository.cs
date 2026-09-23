@@ -14,28 +14,17 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         _context = context;
     }
 
-    public async Task AddAsync(
-        RefreshToken refreshToken,
-        CancellationToken cancellationToken = default)
+    public async Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
     {
-        await _context.RefreshTokens.AddAsync(
-            refreshToken,
-            cancellationToken);
+        await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
     }
 
-    public async Task<RefreshToken?> GetByTokenHashAsync(
-        string tokenHash,
-        CancellationToken cancellationToken = default)
+    public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
-        return await _context.RefreshTokens.SingleOrDefaultAsync(
-            refreshToken => refreshToken.TokenHash == tokenHash,
-            cancellationToken);
+        return await _context.RefreshTokens.SingleOrDefaultAsync(refreshToken => refreshToken.TokenHash == tokenHash, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<RefreshToken>> GetActiveByUserIdAsync(
-        Guid userId,
-        DateTime utcNow,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<RefreshToken>> GetActiveByUserIdAsync(Guid userId, DateTime utcNow, CancellationToken cancellationToken = default)
     {
         return await _context.RefreshTokens
             .Where(refreshToken =>
