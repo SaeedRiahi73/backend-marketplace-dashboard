@@ -20,7 +20,8 @@ namespace Task_Application.Profiles
                 .ForMember(
                     destination => destination.CanChangeStatus,
                     options => options.Ignore());
-            CreateMap<User, GetUserByIdDto>()
+
+            CreateMap<UserDetailsReadModel, GetUserByIdDto>()
                 .ForMember(
                     destination => destination.RoleId,
                     options => options.MapFrom(source => (int)source.Role))
@@ -30,6 +31,15 @@ namespace Task_Application.Profiles
                 .ForMember(
                     destination => destination.CanChangeStatus,
                     options => options.Ignore());
+
+            CreateMap<User, CurrentUserDetailsDto>()
+                .ForMember(
+                    destination => destination.RoleId,
+                    options => options.MapFrom(source => (int)source.Role))
+                .ForMember(
+                    destination => destination.Role,
+                    options => options.MapFrom(source => source.Role.ToString()));
+
             CreateMap<UserListReadModel, UserDto>()
                 .ForMember(
                     destination => destination.RoleId,
@@ -40,9 +50,12 @@ namespace Task_Application.Profiles
                 .ForMember(
                     destination => destination.CanChangeStatus,
                     options => options.Ignore());
+
             CreateMap<User, CreateUserDto>().ReverseMap()
-                .ForMember(u => u.PasswordHash, d => d.MapFrom(i => i.Password)); ;
+                .ForMember(u => u.PasswordHash, d => d.MapFrom(i => i.Password));
+
             CreateMap<Product, ProductDto>().ReverseMap();
+
             CreateMap<Product, UpdateProductDto>().ReverseMap();
         }
     }

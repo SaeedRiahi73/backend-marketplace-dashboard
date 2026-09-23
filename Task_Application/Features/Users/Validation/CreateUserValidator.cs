@@ -24,9 +24,9 @@ namespace Task_Application.Features.Users.Validation
                 .WithMessage("Username must be at least 3 characters.")
                 .MaximumLength(50)
                 .WithMessage("Username cannot exceed 50 characters.")
-                .Matches("^[a-zA-Z0-9._-]+$")
+                .Matches("^[a-zA-Z0-9._ -]+$")
                 .WithMessage(
-                    "Username can only contain letters, numbers, dots, underscores, and hyphens.");
+                    "Username can only contain letters, numbers, spaces, dots, underscores, and hyphens.");
 
             RuleFor(x => x.CreateUser.Email)
                 .NotEmpty()

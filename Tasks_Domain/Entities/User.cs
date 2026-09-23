@@ -59,6 +59,21 @@ public class User
             throw new DomainException("Password cannot be empty.");
 
         PasswordHash = newPasswordHash;
+        InvalidateAllSessions();
+    }
+
+    public void ChangeUsername(string newUsername)
+    {
+        if (string.IsNullOrWhiteSpace(newUsername))
+            throw new DomainException("Username cannot be empty.");
+
+        string trimmedUsername = newUsername.Trim();
+
+        if (Username == trimmedUsername)
+            return;
+
+        Username = trimmedUsername;
+        NormalizedUsername = trimmedUsername.ToLowerInvariant();
         UpdatedAt = DateTime.UtcNow;
     }
 

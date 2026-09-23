@@ -25,52 +25,92 @@ namespace Task_Persistence.Repository
             _context = context;
         }
 
-        public async Task<bool> ExistsByUsernameAsync(
-            string username,
-            CancellationToken cancellationToken = default)
+        public async Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken = default)
+        {
+            string normalizedUsername = username
+                .Trim()
+                .ToLowerInvariant();
+
+            return await _context.Users.AnyAsync(user => user.NormalizedUsername == normalizedUsername, cancellationToken);
+        }
+
+        public async Task<bool> ExistsByUsernameExceptUserAsync(string username, Guid excludedUserId, CancellationToken cancellationToken = default)
         {
             string normalizedUsername = username
                 .Trim()
                 .ToLowerInvariant();
 
             return await _context.Users.AnyAsync(
-                user => user.NormalizedUsername == normalizedUsername,
+                user => user.Id != excludedUserId &&
+                        user.NormalizedUsername == normalizedUsername,
                 cancellationToken);
         }
 
-        public async Task<bool> ExistsByEmailAsync(
-            string email,
-            CancellationToken cancellationToken = default)
+        public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            string normalizedEmail = email
+                .Trim()
+                .ToLowerInvariant();
+
+            return await _context.Users.AnyAsync(user => user.Email == normalizedEmail, cancellationToken);
+        }
+
+        public async Task<bool> ExistsByEmailExceptUserAsync(string email, Guid excludedUserId, CancellationToken cancellationToken = default)
         {
             string normalizedEmail = email
                 .Trim()
                 .ToLowerInvariant();
 
             return await _context.Users.AnyAsync(
-                user => user.Email == normalizedEmail,
+                user => user.Id != excludedUserId &&
+                        user.Email == normalizedEmail,
                 cancellationToken);
         }
 
-        public async Task<User?> GetUserByUsernameAsync(
-            string username,
-            CancellationToken cancellationToken = default)
+        public async Task<User?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
         {
+            string normalizedUsername = username
+                .Trim()
+                .ToLowerInvariant();
+
             return await _context.Set<User>().FirstOrDefaultAsync(
-                user => user.Username == username,
+                user => user.NormalizedUsername == normalizedUsername,
                 cancellationToken);
         }
 
         public async Task<User?> GetUserByUsernameOrEmailAsync(string usernameOrEmail)
         {
-            string lowerUsernameOrEmail = usernameOrEmail.ToLower().Trim();
+            string normalizedUsernameOrEmail = usernameOrEmail
+                .Trim()
+                .ToLowerInvariant();
 
             return await _context.Set<User>()
-                .FirstOrDefaultAsync(u => u.Username == lowerUsernameOrEmail || u.Email == lowerUsernameOrEmail);
+                .FirstOrDefaultAsync(user =>
+                    user.NormalizedUsername == normalizedUsernameOrEmail ||
+                    user.Email == normalizedUsernameOrEmail);
         }
 
-        public async Task<PagedResultDto<UserListReadModel>> GetPagedUsersAsync(
-            GetUsersFilterDto filter,
-            CancellationToken cancellationToken = default)
+        public async Task<UserDetailsReadModel?> GetUserDetailsByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new UserDetailsReadModel
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    Role = user.Role,
+                    IsActive = user.IsActive,
+                    IsSystemUser = user.IsSystemUser,
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    Image = user.Image
+                })
+                .SingleOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<PagedResultDto<UserListReadModel>> GetPagedUsersAsync(GetUsersFilterDto filter, CancellationToken cancellationToken = default)
         {
             IQueryable<User> query = _context.Users.AsNoTracking();
 
