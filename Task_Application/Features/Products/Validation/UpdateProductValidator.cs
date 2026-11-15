@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Task_Application.Common.Validation;
 using Task_Application.Common.Responses;
 using Task_Application.Features.Products.Requests.Commands;
+using Tasks_Domain.Enums;
 
 namespace Task_Application.Features.Products.Validation
 {
@@ -36,6 +38,22 @@ namespace Task_Application.Features.Products.Validation
             RuleFor(p => p.updateProductDto.Quantity)
                 .GreaterThanOrEqualTo(0)
                 .WithMessage("Quantity must be Greater Than Or Equal zero.");
+
+            RuleFor(p => p.updateProductDto.Status)
+                .Must(status =>
+                    status == StatusEnum.Active ||
+                    status == StatusEnum.DeActive)
+                .WithMessage("Product status must be Active or DeActive.");
+
+            RuleFor(p => p.updateProductDto)
+                .Must(product =>
+                    product is null ||
+                    product.ImageFile is null ||
+                    !product.RemoveImage)
+                .WithMessage("A new image cannot be uploaded while removing the current image.");
+
+            RuleFor(p => p.updateProductDto.ImageFile)
+                .SetValidator(new ImageFileValidator());
 
         }
     }

@@ -40,12 +40,10 @@ namespace Task_Application.Features.Products.Handler.Commands
             Guid? userId = _currentUserService.UserId;
 
             if (userId is null || userId == Guid.Empty)
-                return ResultInfo<Guid>.Failure(
-                    ["The user is not authenticated."],
-                    status: ResultStatus.Unauthorized);
+                return ResultInfo<Guid>.Failure(["The user is not authenticated."], status: ResultStatus.Unauthorized);
 
             // ذخیره فایل در پوشه wwwroot/product
-            string imageUrl = string.Empty;
+            string? imageUrl = null;
             if (request.CreateProduct.ImageFile != null && request.CreateProduct.ImageFile.Length > 0)
             {
                 imageUrl = await _fileStorageService.SaveFileAsync(request.CreateProduct.ImageFile, "product", cancellationToken);
