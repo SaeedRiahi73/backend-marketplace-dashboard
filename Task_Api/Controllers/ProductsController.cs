@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Task_Application.Common.Responses;
+using Task_Application.Dtos.Common;
 using Task_Application.Dtos.Product;
 using Task_Application.Features.Products.Requests.Commands;
 using Task_Application.Features.Products.Requests.Queries;
@@ -30,6 +31,31 @@ namespace Task_Api.Controllers
         {
             GetAllProductsQueryRequest Request = new GetAllProductsQueryRequest();
             ResultInfo<IEnumerable<ProductDto>> response = await _mediator.Send(Request);
+
+            return StatusCode((int)response.Status, response);
+        }
+
+        [HttpGet("GetPagedProducts")]
+        public async Task<IActionResult> GetPagedProducts(
+            [FromQuery] GetProductsFilterDto filter,
+            CancellationToken cancellationToken)
+        {
+            GetPagedProductsQueryRequest request = new(filter);
+
+            ResultInfo<PagedResultDto<ProductListItemDto>> response =
+                await _mediator.Send(request, cancellationToken);
+
+            return StatusCode((int)response.Status, response);
+        }
+
+        [HttpGet("GetProductSummary")]
+        public async Task<IActionResult> GetProductSummary(
+            CancellationToken cancellationToken)
+        {
+            GetProductSummaryQueryRequest request = new();
+
+            ResultInfo<ProductSummaryDto> response =
+                await _mediator.Send(request, cancellationToken);
 
             return StatusCode((int)response.Status, response);
         }

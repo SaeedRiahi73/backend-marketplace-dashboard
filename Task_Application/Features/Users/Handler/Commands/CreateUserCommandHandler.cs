@@ -49,46 +49,22 @@ namespace Task_Application.Features.Users.Handler.Command
             UserRole? currentRole = _currentUserService.Role;
 
             if (currentUserId is null || currentRole is null)
-            {
-                return ResultInfo<UserDto>.Failure(
-                    ["The user is not authenticated."],
-                    status: ResultStatus.Unauthorized);
-            }
+                return ResultInfo<UserDto>.Failure(["The user is not authenticated."], status: ResultStatus.Unauthorized);
 
             if (currentRole != UserRole.Admin)
-            {
-                return ResultInfo<UserDto>.Failure(
-                    ["Only administrators can create users."],
-                    status: ResultStatus.Forbidden);
-            }
+                return ResultInfo<UserDto>.Failure(["Only administrators can create users."], status: ResultStatus.Forbidden);
 
             CreateUserDto dto = request.CreateUser;
             UserRole role = dto.Role ?? UserRole.ProductManager;
 
             if (role != UserRole.ProductManager)
-            {
-                return ResultInfo<UserDto>.Failure(
-                    ["The selected role is not allowed for user creation."],
-                    status: ResultStatus.BadRequest);
-            }
+                return ResultInfo<UserDto>.Failure(["The selected role is not allowed for user creation."], status: ResultStatus.BadRequest);
 
-            if (await _userRepository.ExistsByUsernameAsync(
-                    dto.Username,
-                    cancellationToken))
-            {
-                return ResultInfo<UserDto>.Failure(
-                    ["Username already exists."],
-                    status: ResultStatus.Conflict);
-            }
+            if (await _userRepository.ExistsByUsernameAsync(dto.Username, cancellationToken))
+                return ResultInfo<UserDto>.Failure(["Username already exists."], status: ResultStatus.Conflict);
 
-            if (await _userRepository.ExistsByEmailAsync(
-                    dto.Email,
-                    cancellationToken))
-            {
-                return ResultInfo<UserDto>.Failure(
-                    ["Email already exists."],
-                    status: ResultStatus.Conflict);
-            }
+            if (await _userRepository.ExistsByEmailAsync(dto.Email, cancellationToken))
+                return ResultInfo<UserDto>.Failure(["Email already exists."], status: ResultStatus.Conflict);
 
             string passwordHash = _passwordHasher.GenerateHash(dto.Password);
 
@@ -98,9 +74,7 @@ namespace Task_Application.Features.Users.Handler.Command
                 passwordHash,
                 role);
 
-            await _userRepository.AddAsync(
-                user,
-                cancellationToken);
+            await _userRepository.AddAsync(user, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

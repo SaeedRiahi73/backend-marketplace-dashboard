@@ -12,7 +12,7 @@ namespace Task_Domain.Entities
     {
         public Guid Id { get; private set; }
         public string Name { get; private set; }
-        public string Description { get; private set; }
+        public string Description { get; private set; } = string.Empty;
         public decimal Price { get; private set; }
         public int Quantity { get; private set; }
         public StatusEnum Status { get; private set; }
@@ -20,7 +20,7 @@ namespace Task_Domain.Entities
         public DateTime Created { get; private set; }
         public string? Image { get; private set; }
 
-        public Product(string name, string description, decimal price, int quantity, StatusEnum status, Guid createdBy, string? image)
+        public Product(string name, string? description, decimal price, int quantity, StatusEnum status, Guid createdBy, string? image)
         {
             if (price <= 0)
                 throw new DomainException("Price must be greater than zero");
@@ -28,9 +28,11 @@ namespace Task_Domain.Entities
             if (quantity < 0)
                 throw new DomainException("Quantity must be greater than zero");
 
+            ValidateStatus(status);
+
             Id = Guid.NewGuid();
             Name = name;
-            Description = description;
+            Description = NormalizeDescription(description);
             Price = price;
             Quantity = quantity;
             Status = status;
@@ -41,7 +43,7 @@ namespace Task_Domain.Entities
 
         //  سازنده بدون پارامتر برای EF Core
         private Product() { }
-        public void Update(string name, string description, decimal price, int quantity, StatusEnum status, string? image)
+        public void Update(string name, string? description, decimal price, int quantity, StatusEnum status, string? image)
         {
 
             if (price <= 0)
@@ -50,12 +52,28 @@ namespace Task_Domain.Entities
             if (quantity < 0)
                 throw new DomainException("Quantity must be greater than zero");
 
+            ValidateStatus(status);
+
             Name = name;
-            Description = description;
+            Description = NormalizeDescription(description);
             Price = price;
             Quantity = quantity;
             Status = status;
             Image = image;
+        }
+
+        private static void ValidateStatus(StatusEnum status)
+        {
+            // All is only for filtering, and Deleted is not stored because deletion is physical.
+            if (status != StatusEnum.Active && status != StatusEnum.DeActive)
+                throw new DomainException("Product status must be Active or DeActive.");
+        }
+
+        private static string NormalizeDescription(string? description)
+        {
+            return string.IsNullOrWhiteSpace(description)
+                ? string.Empty
+                : description.Trim();
         }
     }
 }

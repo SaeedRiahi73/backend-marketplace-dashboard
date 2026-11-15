@@ -31,9 +31,7 @@ namespace Task_Application.Features.Products.Handler.Queries
                 cancellationToken);
 
             if (product == null)
-                return ResultInfo<ProductDto>.Failure(
-                    ["Product not found."],
-                    status: ResultStatus.NotFound);
+                return ResultInfo<ProductDto>.Failure(["Product not found."], status: ResultStatus.NotFound);
 
             ProductDto productDto = _mapper.Map<ProductDto>(product);
 

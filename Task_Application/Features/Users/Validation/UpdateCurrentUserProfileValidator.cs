@@ -1,5 +1,5 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
+using Task_Application.Common.Validation;
 using Task_Application.Features.Users.Requests.Commands;
 
 namespace Task_Application.Features.Users.Validation;
@@ -7,25 +7,6 @@ namespace Task_Application.Features.Users.Validation;
 public sealed class UpdateCurrentUserProfileValidator
     : AbstractValidator<UpdateCurrentUserProfileCommandRequest>
 {
-    private const long MaxImageSizeInBytes = 2 * 1024 * 1024;
-
-    private static readonly HashSet<string> AllowedImageExtensions =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp"
-        };
-
-    private static readonly HashSet<string> AllowedImageContentTypes =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            "image/jpeg",
-            "image/png",
-            "image/webp"
-        };
-
     public UpdateCurrentUserProfileValidator()
     {
         RuleFor(command => command.Profile)
@@ -69,23 +50,7 @@ public sealed class UpdateCurrentUserProfileValidator
                     "A new image cannot be uploaded while removing the current image.");
 
             RuleFor(command => command.Profile.ImageFile)
-                .Must(image => image is null || image.Length > 0)
-                .WithMessage("The selected image is empty.")
-                .Must(image => image is null || image.Length <= MaxImageSizeInBytes)
-                .WithMessage("The image size cannot exceed 2 MB.")
-                .Must(HaveAllowedImageFormat)
-                .WithMessage("Only JPG, JPEG, PNG, and WEBP images are allowed.");
+                .SetValidator(new ImageFileValidator());
         });
-    }
-
-    private static bool HaveAllowedImageFormat(IFormFile? image)
-    {
-        if (image is null)
-            return true;
-
-        string extension = Path.GetExtension(image.FileName);
-
-        return AllowedImageExtensions.Contains(extension) &&
-               AllowedImageContentTypes.Contains(image.ContentType);
     }
 }

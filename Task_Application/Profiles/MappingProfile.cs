@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Task_Application.Dtos.Product;
 using Task_Application.Dtos.User;
+using Task_Application.Models.Product;
 using Task_Application.Models.User;
 using Task_Domain.Entities;
 
@@ -57,6 +58,16 @@ namespace Task_Application.Profiles
             CreateMap<Product, ProductDto>().ReverseMap();
 
             CreateMap<Product, UpdateProductDto>().ReverseMap();
+
+            CreateMap<ProductListReadModel, ProductListItemDto>()
+                .ForMember(
+                    destination => destination.StatusId,
+                    options => options.MapFrom(source => (int)source.Status))
+                .ForMember(
+                    destination => destination.Status,
+                    options => options.MapFrom(source => source.Status.ToString()));
+
+            CreateMap<ProductSummaryReadModel, ProductSummaryDto>();
         }
     }
 }

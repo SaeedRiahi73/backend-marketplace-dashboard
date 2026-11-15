@@ -41,19 +41,13 @@ namespace Task_Application.Features.Products.Handler.Commands
             Guid? userId = _currentUserService.UserId;
 
             if (userId is null || userId == Guid.Empty)
-                return ResultInfo<Unit>.Failure(
-                    ["The user is not authenticated."],
-                    status: ResultStatus.Unauthorized);
+                return ResultInfo<Unit>.Failure(["The user is not authenticated."], status: ResultStatus.Unauthorized);
 
             // 1. پیدا کردن محصول موجود در دیتابیس
-            var product = await _productRepository.GetByIdAsync(
-                request.updateProductDto.Id,
-                cancellationToken);
+            var product = await _productRepository.GetByIdAsync(request.updateProductDto.Id, cancellationToken);
 
             if (product == null)
-                return ResultInfo<Unit>.Failure(
-                    ["Product not found."],
-                    status: ResultStatus.NotFound);
+                return ResultInfo<Unit>.Failure(["Product not found."], status: ResultStatus.NotFound);
 
             // 2.  بررسی اینکه آیا فقط سازنده محصول می‌تواند آن را ویرایش کند؟
             // if (product.CreatedBy != userId.Value)

@@ -44,48 +44,28 @@ public sealed class UpdateCurrentUserProfileCommandHandler
         Guid? currentUserId = _currentUserService.UserId;
 
         if (currentUserId is null)
-        {
-            return ResultInfo<CurrentUserDetailsDto>.Failure(
-                ["The user is not authenticated."],
-                status: ResultStatus.Unauthorized);
-        }
+            return ResultInfo<CurrentUserDetailsDto>.Failure(["The user is not authenticated."], status: ResultStatus.Unauthorized);
 
-        User? user = await _userRepository.GetByIdAsync(
-            currentUserId.Value,
-            cancellationToken);
+        User? user = await _userRepository.GetByIdAsync(currentUserId.Value, cancellationToken);
 
         if (user is null)
-        {
-            return ResultInfo<CurrentUserDetailsDto>.Failure(
-                ["User not found."],
-                status: ResultStatus.NotFound);
-        }
+            return ResultInfo<CurrentUserDetailsDto>.Failure(["User not found."], status: ResultStatus.NotFound);
 
         if (user.Role == UserRole.Demo)
-        {
-            return ResultInfo<CurrentUserDetailsDto>.Failure(
-                ["Demo users cannot update their profile."],
-                status: ResultStatus.Forbidden);
-        }
+            return ResultInfo<CurrentUserDetailsDto>.Failure(["Demo users cannot update their profile."], status: ResultStatus.Forbidden);
 
         UpdateCurrentUserProfileDto profile = request.Profile;
 
         bool usernameAlreadyExists =
             profile.Username is not null &&
-            await _userRepository.ExistsByUsernameExceptUserAsync(
-                profile.Username,
-                user.Id,
-                cancellationToken);
+            await _userRepository.ExistsByUsernameExceptUserAsync(profile.Username, user.Id, cancellationToken);
 
         if (usernameAlreadyExists)
             return ResultInfo<CurrentUserDetailsDto>.Failure(["Username already exists."], status: ResultStatus.Conflict);
 
         bool emailAlreadyExists =
             profile.Email is not null &&
-            await _userRepository.ExistsByEmailExceptUserAsync(
-                profile.Email,
-                user.Id,
-                cancellationToken);
+            await _userRepository.ExistsByEmailExceptUserAsync(profile.Email, user.Id, cancellationToken);
 
         if (emailAlreadyExists)
             return ResultInfo<CurrentUserDetailsDto>.Failure(["Email already exists."], status: ResultStatus.Conflict);

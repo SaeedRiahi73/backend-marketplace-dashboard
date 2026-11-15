@@ -1,6 +1,8 @@
 ﻿using Azure;
 using FluentValidation;
 using System.Text.Json;
+using Task_Application.Common.Responses;
+using Task_Application.Enums;
 
 namespace Task_Api.Middlewares
 {
@@ -23,13 +25,15 @@ namespace Task_Api.Middlewares
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    IsSuccess = false,
-                    Errors = ex.Errors
-                               .Select(x => x.ErrorMessage)
-                               .Distinct()
-                });
+                IEnumerable<string> errors = ex.Errors
+                    .Select(error => error.ErrorMessage)
+                    .Distinct();
+
+                ResultInfo<object?> response = ResultInfo<object?>.Failure(
+                    errors,
+                    status: ResultStatus.BadRequest);
+
+                await context.Response.WriteAsJsonAsync(response);
             }
             catch (Exception ex)
             {
